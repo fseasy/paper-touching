@@ -18,4 +18,33 @@ repo: https://github.com/abisee/pointer-generator
 
 1. download data
 
-有完全准备好的数据，在 https://github.com/JafferWilson/Process-Data-of-CNN-DailyMail 
+作者给出了完整的数据处理流程，放在 https://github.com/abisee/cnn-dailymail 下。
+
+不过我们使用一个用户（见讨论 https://github.com/abisee/cnn-dailymail/issues/9 ）提供的已经处理完的数据，结果在 https://github.com/JafferWilson/Process-Data-of-CNN-DailyMail 
+
+下载其中的 *FINISHED_FILES* 对应的链接里的文件，得到一个zip，解压后是如下的结构：
+
+::
+
+    chunked/
+        test_000.bin
+        ...
+        test_011.bin
+        train_000.bin
+        ...
+        train_287.bin
+        val_000.bin
+        ...
+        val_013.bin
+    test.bin
+    train.bin
+    val.bin
+    vocab
+
+其中 ``chunked`` 存储的是将外边对应的文件按照1K每份做划分后的结果——划分是为了后面训练时多进程读取输入。
+
+*\*.bin* 是使用 ``abisee/cnn-dailymail`` 仓库中的 ``make_datafiles.py`` 脚本处理原生txt的结果。
+处理过程大概是用 ``tensorflow.core.example.example_pb2.Example`` 
+对象来存储tokenize过的article和abstract,
+然后序列化这个对象，
+并以二进制方式写入到文件。则应该是tf标准的处理方式。暂时先不管。
