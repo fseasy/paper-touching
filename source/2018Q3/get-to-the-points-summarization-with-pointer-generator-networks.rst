@@ -48,3 +48,9 @@ repo: https://github.com/abisee/pointer-generator
 对象来存储tokenize过的article和abstract,
 然后序列化这个对象，
 并以二进制方式写入到文件。则应该是tf标准的处理方式。暂时先不管。
+
+2. 安装tf
+
+还是觉得在公司电脑上运行，所以登上去用virtualenv 装了tf1.2；但是看README是1.2.1，不知道有没有差别；
+
+此外，需要重新把文件下载到服务器上。好麻烦……
