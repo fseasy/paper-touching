@@ -54,3 +54,12 @@ repo: https://github.com/abisee/pointer-generator
 还是觉得在公司电脑上运行，所以登上去用virtualenv 装了tf1.2；但是看README是1.2.1，不知道有没有差别；
 
 此外，需要重新把文件下载到服务器上。好麻烦……
+
+
+3. 运行
+
+搞定。用tf1.2顺利把train跑起来了。还通过tensorbord看了下loss（scalar）；不过看graph和embedding都失败了。
+应该是没有把graph保存下来；embedding查看则一直在parsing，不知道是不是工作用的Mac air性能太差了。
+
+不管怎么说，前期运行已经OK了。下面就是看代码了！
+
