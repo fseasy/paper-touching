@@ -63,3 +63,44 @@ repo: https://github.com/abisee/pointer-generator
 
 不管怎么说，前期运行已经OK了。下面就是看代码了！
 
+Reading Code
+-------------
+
+主入口是 ``run_summarization.py``
+
+::
+
+    part1: config-argument definitions
+    part2: global function
+        a. calc_running_avg_loss
+            平滑loss；每一步将之前的累积loss decay，同时加上缩放过的当前一步的loss，得到新的累计loss
+            以此新的累计loss为当前的loss
+        b. restore_best_model
+            将eval的模型拷贝到train下；其中用到了tf的参数恢复的能力！
+        c. convert_to_coverage_model
+            转换模型
+        d. setup_training
+            设置training & 跑training； 使用了tf.train.Supervisor
+        e. run_training
+        f. run_eval
+        g. main
+            判定是解码时，设置 batch-size = beam-size. 利用是
+            in decode mode, we decode one example at a time. On each step, we have 
+            beam_size-many hypotheses in the beam, 
+            so we need to make a batch of these hypotheses.
+            应该得结合beam-search怎么做的来看了。
+
+            用一个namedtuple来存储flags的解析的且需要的东西
+
+            用 tf.set_random_seed 来设置随机数种子
+
+            在decode模式下可以看到：将 max_dec_steps 强制设为1了；解释说是每次做一步！然后调用的是
+            BeamSearchDecoder.decode 来做的。
+
+
+接下来看下 ``model.py``, 这个应该是我们核心要学习的。
+
+::
+
+    SummarizationModel
+
