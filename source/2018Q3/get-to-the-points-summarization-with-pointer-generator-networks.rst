@@ -104,3 +104,37 @@ Reading Code
 
     SummarizationModel
 
+        _add_placeholders
+            输入部分
+            enc_batch, int32, (batch-size, None), 说明每次每个batch的size部署固定的！
+            enc_len, int32, (batch-size), batch中每个句子的长度？
+            enc_padding_mask, float32, (batch-size, None) mask 处理！
+            如果是 pointer-gen 网络
+                enc_batch_extend_vocab, int32, (batch-size, None) 每个instance的扩展vocab
+                max_art_oovs, int32, [], 不清楚是什么
+            
+            dec_batch, int32, (batch-size, None)
+            target_batch, int32, (batch-size, None)
+            dec_padding_mask, float32, (batch-size, None)
+        
+            decode & coverage时
+                prev_coverage, float32, (batch-size, None)
+        
+        _add_encoder
+            创建lstm cell，用的是
+                tf.contrib.rnn.LSTMCell
+            这个和 tf.nn.rnn_cell.LSTMCell 是等价的（alais）; initializer 用的是同一个initializer:
+                self.rand_unif_init = tf.random_uniform_initializer(
+                    - rand_unif_init_mag, rand_unif_init_mag, seed=123
+                )
+             tf.rand_unif_init
+            创建双向LSTM网络，用的是
+                tf.nn.bidirectional_dynamic_rnn
+            传入了 sequence_len，这个应该是来自data部分的输入；
+            swap_memory = True, 这个参数的解释是
+            Transparently swap the tensors produced in forward inference but needed for back prop 
+            from GPU to CPU. This allows training RNNs which would typically 
+            not fit on a single GPU, with very minimal (or no) performance penalty.
+            似乎是多GPU时把这个参数打开；默认是False的；
+            
+
