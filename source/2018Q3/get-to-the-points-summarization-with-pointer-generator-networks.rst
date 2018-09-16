@@ -67,6 +67,7 @@ Reading Code
 -------------
 
 主入口是 ``run_summarization.py``
+++++++++++++++++++++++++++++++++++
 
 ::
 
@@ -98,7 +99,10 @@ Reading Code
             BeamSearchDecoder.decode 来做的。
 
 
-接下来看下 ``model.py``, 这个应该是我们核心要学习的。
+接下来看下 ``model.py``
++++++++++++++++++++++++++++++++
+
+这个应该是我们核心要学习的。
 
 ::
 
@@ -138,4 +142,38 @@ Reading Code
             not fit on a single GPU, with very minimal (or no) performance penalty.
             似乎是多GPU时把这个参数打开；默认是False的；
             
+
+``data.py`` 模块处理数据
++++++++++++++++++++++++
+
+比较有意思的：
+
+在从外部字典文件加载到内部字典时，会把最后一个加入的词打出来——方便定位，很细心。
+
+
+如下是特殊字符：
+
+:: 
+
+    # <s> and </s> are used in the data files to segment the abstracts into sentences. 
+    # They don't receive vocab ids.
+    SENTENCE_START = '<s>'
+    SENTENCE_END = '</s>'
+
+    PAD_TOKEN = '[PAD]' # This has a vocab id, which is used to pad the encoder input, decoder input and target sequence
+    UNKNOWN_TOKEN = '[UNK]' # This has a vocab id, which is used to represent out-of-vocabulary words
+    START_DECODING = '[START]' # This has a vocab id, which is used at the start of every decoder input sequence
+    STOP_DECODING = '[STOP]' # This has a vocab id, which is used at the end of untruncated target sequences
+
+
+包含一个用于TensorBoard可视化的函数。
+
+有一个函数来生成 ``tf.Example`` , 其中用 ``glob.glob`` 函数来扩展通配符，这个挺不错的。从data中读取tf.Example
+时，用了 `struct` 这个标准库，这个是用来以二进制方式在C类型与Python类型做交换的；不是特别懂这个，可能算是序列化的
+一种方式？用 ``struct.unpack`` 来完成的。
+
+原来，虽然在generator机制下，input中的UNK（不出现在全局词典中）会被拿出来作为额外的字典；
+但是训练语料中abstract的内容中，可能仍然含有不在全局词典 + input额外词典中的词，所以 **训练语料的输入中，还是有可能有UNK！**
+
+
 
