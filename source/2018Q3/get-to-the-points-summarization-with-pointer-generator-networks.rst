@@ -127,7 +127,8 @@ Reading Code
                 self.rand_unif_init = tf.random_uniform_initializer(
                     - rand_unif_init_mag, rand_unif_init_mag, seed=123
                 )
-             tf.rand_unif_init
+                state_is_tuple = True, 默认行为；返回的结果有
+
             创建双向LSTM网络，用的是
                 tf.nn.bidirectional_dynamic_rnn
             传入了 sequence_len，这个应该是来自data部分的输入；
