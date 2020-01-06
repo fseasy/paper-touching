@@ -46,7 +46,7 @@ Finetuning 阶段
 
 **疑问**：
 
-对NLG，解码的时候该怎么做呢？
+对NLG，解码的时候该怎么做呢？不是auto-regressive的，难道是解码一个token就要把前面的input全部输入进去？
 
 
 实验：Abstracitve Summarization任务
@@ -81,4 +81,14 @@ CoQA上，将对话历史、问题、passage拼接起来作为segment1；
 
 这个设计还是有点意思的；另外，还提到一句说“在数据增强的实验中，用的是bidirectional masked language model作为
 辅助任务，而不是直接用（端到端的seq2seq训练？）”，这样可以获得2.3个点的绝对提升，猜测是可以避免在增强数据上灾难遗忘。
+
+
+代码阅读
+-------------
+
+
+**decode_seq2seq.py**
+
+max_seq_len 至少应该比tgt_seq_len 大2； 应该是因为seq input有额外的token；
+
 
