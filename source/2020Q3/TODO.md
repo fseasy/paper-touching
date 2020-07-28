@@ -23,3 +23,7 @@ How Can We Accelerate Progress Towards Human-like Linguistic Generalization?
 1. Torch-Struct: Deep Structured Prediction Library
 
 2. Prta: A System to Support the Analysis of Propaganda Techniques in the News
+
+## Other
+
+Embedding-based Retrieval in Facebook Search, Jui-Ting Huang, Facebook
