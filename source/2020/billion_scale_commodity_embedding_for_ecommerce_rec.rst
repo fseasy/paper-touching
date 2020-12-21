@@ -121,7 +121,56 @@ BGE 比 CF 强，但是依然解决不了只有很少行为甚至没有行为的
 
 BGE 没法处理冷启动问题；需要考虑 side information.
 
-编码也非常简单——每个 side-information 和 item id 一样的等同对待，one-hot => 映射为 d 维的向量 => avg pooling, 就得到了 item 的表示向量。 训练方式依然保持不变。
+编码也非常简单——每个 side-information 和 item id 一样的等同对待，one-hot => 映射为 d 维的向量 => avg pooling, 就得到了 item 的表示向量。 
+
+训练方式依然保持不变。
+
+
+方式3： EGES
++++++++++++++++++++++++
+
+BGE 只是简单的把各个 side-information 平均起来，一个简单的优化就是加权求和。
+
+论文的权重计算也非常简单，就是对每个 side-information, 
+学习 1 个权重值，然后整体归一化一下，加权求和。 
+
+加权求和用的是 `softmax` , 论文里竟然没有点明，自己竟然也看了半天论文里说的为啥要用 ..math:`e^{a_{v}^{j}}` = =
+
+此外，论文引出该方法时的说法我觉得值得商榷：
+
+    For example, a user who has bought an IPhone tends to view Macbook or IPad because of the brand "Apple", while a user may buy clothes 
+    of different brands in the same shop of taobao for 
+    convenience and lower price.
+
+然后为了解决这个问题，所以对不同的side-information做加权。
+
+但是，这个加权其实是全局的，即对任何的物料，权重都是一样的；然而上面说法，更合理的应对方法，
+应该是针对不同类型的物料, 或者不同的用户，side-information 的权重应该不同。当然，
+不同的用户用不同的权重，这显然在这里不太现实。
+
+因而反过来说，论文里的这个引子，还是不够好。
+
+
+===========================
+实验
+===========================
+
+用于验证效果的方法：
+
+1. link prediction task (offline Evaluation)
+2. online experimental result on Model Taobao App. 
+3. some real-world cases
+
+link prediction task (offline Eval)
++++++++++++++++++++++++++++++++++++++++++++++++
+
+link prediction 是网络中的基础问题，所以用作离线实验。
+
+任务定义： 从图中，随机抹掉一些边，然后预测边是否存在。
+
+细节： 1. 1/3的边被随机抹掉，作为测试集；剩余的边作为训练集； 2. 
+
+
 
 ==========================
 其他
