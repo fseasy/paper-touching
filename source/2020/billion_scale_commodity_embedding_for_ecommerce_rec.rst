@@ -111,7 +111,7 @@ BGE 比 CF 强，但是依然解决不了只有很少行为甚至没有行为的
     2. 路径长度
     3. 总共生成多少个
 
-    没有细说。
+    没有细说 => 在后面的实验中，有提到。
 
 2. 得到 item 的序列 数据集后，直接用 word2vec 的 Skip-Gram + negative-sampling
 (图里面画的是 smapled softmax, 可能差别没有那么大)模式训练即可。
@@ -145,8 +145,8 @@ BGE 只是简单的把各个 side-information 平均起来，一个简单的优�
 然后为了解决这个问题，所以对不同的side-information做加权。
 
 但是，这个加权其实是全局的，即对任何的物料，权重都是一样的；然而上面说法，更合理的应对方法，
-应该是针对不同类型的物料, 或者不同的用户，side-information 的权重应该不同。当然，
-不同的用户用不同的权重，这显然在这里不太现实。
+应该是针对不同类型的物料, 或者不同的用户，side-information 的权重应该不同。
+当然，不同的用户用不同的权重，这显然在这里不太现实。
 
 因而反过来说，论文里的这个引子，还是不够好。
 
@@ -158,7 +158,7 @@ BGE 只是简单的把各个 side-information 平均起来，一个简单的优�
 用于验证效果的方法：
 
 1. link prediction task (offline Evaluation)
-2. online experimental result on Model Taobao App. 
+2. online experimental result on Mobile Taobao App. 
 3. some real-world cases
 
 link prediction task (offline Eval)
