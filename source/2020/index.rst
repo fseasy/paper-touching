@@ -3,8 +3,8 @@
 ==========================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
    :caption: 目录:
    :glob:
 
-   2020/0*
+   0*

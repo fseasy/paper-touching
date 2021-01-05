@@ -12,7 +12,7 @@ Paper-Touching
    :glob:
 
    2018-2019
-   2020
+   2020/index
 
 
 Indices and tables
