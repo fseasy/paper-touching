@@ -6,6 +6,11 @@ Billion-scale Commodity Embedding for E-commerce Recommendation in Alibaba
 
 大名鼎鼎的 EGES. 淘宝主要面临3个挑战： scalability, sparsity, cold-start. 这篇文章就要解决这3个问题。
 
+==========================
+1. 概述
+==========================
+
+
 GMV: Gross Merchandise Volume （总成交额）
 
 Double-Eleven Day: 双11
@@ -42,8 +47,11 @@ BGE 比 CF 强，但是依然解决不了只有很少行为甚至没有行为的
 3. 部署 graph embedding system.  (在自研的 Xensorflow 上)
 
 ==========================
-构建 item graph
+2. 方法
 ==========================
+
+2.1 构建 item graph
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 图是 加权有向 图；
 
@@ -79,11 +87,10 @@ BGE 比 CF 强，但是依然解决不了只有很少行为甚至没有行为的
 2. spam user (3 个月内买 1,000 个 item，或者点了超过 3,500 的用户)
 3. item 的 id 没变，但是零售商把其内容大幅改变了
 
-==========================
-计算 emb
-==========================
+2.2 计算 emb
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-方法1： BGE
+2.2.1 方法1： BGE
 +++++++++++++++++++++++
 
 就是利用 DeepWalk 方式来构建 Emb；
@@ -112,7 +119,7 @@ BGE 比 CF 强，但是依然解决不了只有很少行为甚至没有行为的
 2.  得到 item 的序列 数据集后，直接用 word2vec 的 Skip-Gram + negative-sampling 
     (图里面画的是 smapled softmax, 可能差别没有那么大)模式训练即可。
 
-方式2： GES
+2.2.2 方式2： GES
 +++++++++++++++++++++++
 
 BGE 没法处理冷启动问题；需要考虑 side information.
@@ -123,33 +130,34 @@ BGE 没法处理冷启动问题；需要考虑 side information.
 训练方式依然保持不变。
 
 
-方式3： EGES
+2.2.3 EGES
 +++++++++++++++++++++++
 
 BGE 只是简单的把各个 side-information 平均起来，一个简单的优化就是加权求和。
 
-论文的权重计算也非常简单，就是对每个 side-information, 
-学习 1 个权重值，然后整体归一化一下，加权求和。 
+权重怎么定义？ 有如下候选可以考量：
 
-加权求和用的是 `softmax` , 论文里竟然没有点明，自己竟然也看了半天论文里说的为啥要用 :math:`e^{a_{v}^{j}}` = =
+1. 是 1 个 side-information 定义1个固定权重？ 这样显然表现能力有限
+2. 是每个物品的每个 side-information 都对应 1 个权重？ 这样显然很稀疏
+3. 还是用 `attention` 思想，定义1个 weight 向量，通过与各个 side-information 向量交互得到权重？看起来不错。
 
-此外，论文引出该方法时的说法我觉得值得商榷：
+然而，论文用的方法2…… 论文里说，申请了一个 A matrix, shape是 :math:`|V| \times (n +１)`，　
+其中　``n`` 就是 side-information 个数，``+ 1`` 是因为还有 item-id 的这个域；``|V|`` 就是图里 vertex 个数，也就是 item 的个数了。 
 
-    For example, a user who has bought an IPhone tends to view Macbook or IPad because of the brand "Apple", while a user may buy clothes 
-    of different brands in the same shop of taobao for 
-    convenience and lower price.
+    不用 attention 的方式来做，我觉得是不太好的…… 说白了，这里没有用矩阵分解（即 attention）来算权重，
+    而是独立的标量，对泛化可能会有很大的影响 —— 且不说过拟合，就是你后面对冷启动物品，怎么得到side-information的权重呢？
 
-然后为了解决这个问题，所以对不同的side-information做加权。
+    从后文来看，对冷启动物品，是直接取的 average, 不说简单粗暴，至少也是退化到 GES 了，与 EGES 框架就不搭了。
 
-但是，这个加权其实是全局的，即对任何的物料，权重都是一样的；然而上面说法，更合理的应对方法，
-应该是针对不同类型的物料, 或者不同的用户，side-information 的权重应该不同。
-当然，不同的用户用不同的权重，这显然在这里不太现实。
+    考虑到 2017 年， NLP 里的 attention 早就用烂了，这里没有任何说明，还是值得 argue 的。
 
-因而反过来说，论文里的这个引子，还是不够好。
+加权求和，需要对权重先做归一化（和为1）。论文里权重归一化用的是 `softmax` :math:`e^{a_{v}^{j}}` ； 
+论文里说这是为了保证每个 side-information 权重都大于0（的确！）
 
+> 论文没有点明用的是 softmax 归一化, 但是从公式来看确实是。
 
 ===========================
-实验
+3. 实验
 ===========================
 
 用于验证效果的方法：
@@ -158,8 +166,8 @@ BGE 只是简单的把各个 side-information 平均起来，一个简单的优�
 2. online experimental result on Mobile Taobao App. 
 3. some real-world cases
 
-link prediction task (offline Eval)
-+++++++++++++++++++++++++++++++++++++++++++++++
+3.1 link prediction task (offline Eval)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 link prediction 是网络中的基础问题，所以用作离线实验。
 
@@ -185,16 +193,126 @@ Amazon          300 K        3.7 M           3            99.6%
 Taobao          2.6 M        45.0 M         12            99.9%
 ============== ============ ============ ============ ====================================================
 
-1.  Amazon Electronics, denoted by Amazon in `Image-based recommendations on styles and substitutes. SIGIR, 2015`
+> 原论文Spacity应该少乘了 100% 吧……
+
+1.  Amazon Electronics, denoted by Amazon in *Image-based recommendations on styles and substitutes. SIGIR, 2015*
 
     基于 co-purchasing (also-bought) 来构建边； 共有 3 种 side-information: category, sub-category, brand.
 
 2.  Taobao，从 Taobao Mobile 上抽取的数据。
 
-    基于前面提到的行为 session 来构建边； side-information 有12种，包含 retailer, gender, age, style, purchase-level
-    等；
+    基于前面提到的行为 session 来构建边； side-information 有12种，包含 brand, retailer, gender, age, style, 
+    purchase-level 等；
 
 两个数据构成的图，都是很稀疏的！稀疏率都是 99+%, 边的数量大概是节点量的 10 倍以上。
+
+**对比方法**
+
+====== ========
+Method Remark
+====== ========
+BGE    前面提到的基础方法
+LINE   *Line: Large-scale information network embedding, WWW, 2015*, 
+       使用1阶和二阶邻居来计算 Emb； 分别记为 LINE(1st), LINE(2st)
+GES    用了 side-informaction 的 GE
+EGES   加权的 GES
+====== ========
+
+LINE 用的原始论文实现，其他都是自己实现。
+
+**参数设置**
+
+emb 维度都设为 160; 
+
+对 BGE, GES, EGES 中的随机游走，游走长度设为 10， 每个节点游走 20 次；训练 emb 时， context-window 
+（应该就是negtive-sampling 时正例选择的窗口）设为 5； 
+
+**结论**
+
+表就不 copy 了，BGE 在两个数据集上都最差； LINE 在 Amazon 上和 GES 基本接近，在 Taobao 上差 3 个点。
+
+EGES自然都是最好的，但是在 Amazon 较显著优于 GES，但在 Taobao 相比 GES 差别不大。
+
+Taobao 上， GES 相比 BGE 高 10 个点，说明 side-information 还是有用的 —— 论文里说解决了稀疏性问题。
+
+Amazon 上的提升， GES 相比 BGE 只有 2 个点，这说明 side-information 较少时提升有限；但是 EGES 相比 GES 提升了1个多点，
+说明 side-information 不充分时，用加权的方式，能够获得更好的提升。
+
+    感觉说这个说法，有道理也没道理。
+
+    有道理的是，加权毕竟表达能力更好，当side-information 少时，表达能力受限，这时加上加权，表达能力可能就上去了。
+    
+    没道理的是，既然 side-information 少，那岂不是加权的意义也没那么大？ 至少不该好于 12 个 side-information ？ 
+    这种结论，说白了都是基于结果倒推，意义没有那么大。 work 就行吧。
+
+3.2 在线 A/BTest
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**方法**
+
+基于 Item 的 Embedding， 计算每个 item 的 相似item， 输入到排序模型，作为 Taobao Mobile 主页推荐的结果。
+
+相似结果的好坏，直接影响到推荐结果！
+
+    没有说每个 item 要生成多少个相似 item，也没有说这套系统在实验过程中，Emb 是不是根据行为、新上传 item 实时更新的。
+    我觉得这两点应该挺重要的。
+
+**对比方法**
+
+====== =======
+Method  Remark
+====== =======
+Base   Item-CF 的方法，考虑了物品的（在行为中的）共现，以及用户的voting weight.
+       这套方法在 GE 应用前在淘宝大规模应用，用了很多人工启发式的规则（主要用来计算 user voting weight?）。
+BGE 
+GES
+EGES
+====== =======
+
+各个方法出来结果后，用的是一套 rank .
+
+**实验设置**
+
+使用 CTR 作为指标。
+
+实验做了 7 天，做实验的时间是 2017 年 11 月。
+
+**效果**
+
+Base 好于 BGE; EGES > GES >　Ｂase;
+
+3.3 Case Study
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+研究的是 EGES 的向量表现。
+
+3.3.1 向量可视化
++++++++++++++++++++++++++++
+
+把鞋子的 Embedding，用 `projector-tensorflow <https://projector.tensorflow.org/>`_ 来可视化(PCA 方式)。
+
+可以看到，不同 category 的鞋子，分属于不同的聚类（说明 category 对应的向量，在加权后的整体向量里还是挺有影响力的）；
+
+进一步的，发现 badminton 和 table tennis 聚类很接近，与 football 较远。作者分析说，这表示中国人里，
+喜欢 羽毛球 和 乒乓球 的人有较大的重叠；而喜欢足球的人，与喜欢羽毛球、乒乓球这些室内运动的人重叠很少。
+
+> 挺有意思的！
+
+3.3.2 冷启动物品效果
++++++++++++++++++++++++++++
+
+**如果构建 冷启动物品 向量？**
+
+非常简单，把冷启动物品的各 side-information 对应的 emb， 平均一下，就是冷启动物品的向量表示了。
+
+**效果**
+
+
+论文里看了 2 个case的效果：分别选了属于衣服和毛巾的一个商品，查看 Top4 相似的商品。看起来效果还是很好的，如论文截图：
+
+.. image:: ./resource/02_eges_figure_5_sim_items_for_cold_start.jpg
+
+论文继续说 shop 的权重
 
 
 ==========================

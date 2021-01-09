@@ -10,6 +10,14 @@ div.document {
     }
 }
 
+blockquote {
+    border-left: 3px solid #3fa7cb;
+    padding-left: 20px;
+    margin:0;
+    font-size: 16px;
+    font-family: -apple-system,BlinkMacSystemFont,SFProDisplay-Regular,"Helvetica Neue",consolas,STKaiti,KaiTi,"WenQuanYi Micro Hei","sans-serif";
+}
+
 div.footer {
     width: 1200px;
     text-align: center;
