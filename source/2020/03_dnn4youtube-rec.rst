@@ -6,6 +6,26 @@ Paul Covinton, Jay Adams, Emre Sargin, Google, Mountain View, CA
 
 经典论文。2016年的文章了。
 
+相关博客文章
+~~~~~~~~~~~~~~~~~~~~
+
+1.  `DNN YouTube Recommendations 召回 <https://zhuanlan.zhihu.com/p/42158565>`_
+
+    该文章仅关注召回部分。
+
+    **softmax 参数直接用item 的向量**
+    
+    在softmax阶段均采用图二中构造用户历史embedding序列时的与商品id对应embedding商品矩阵(即YouTubeNet中的视频矩阵)做内积计算。
+
+    SESSION-BASED RECOMMENDATIONS WITH RECURRENT NEURAL NETWORKS
+
+    **（负）采样方法**
+
+    不是从列表页中，选择没有点击过的，而是：
+
+    从当天所有点击过的商品中，除去当前用户点击过的商品，从剩余商品中随机选择 20 个商品作为负样本。
+
+
 YouTube推荐时主要有3个挑战：
 
 1. scale 大规模；高分布式学习与高效部署
@@ -24,8 +44,7 @@ Google内部开始将基本上所有的learning-problem的通用解决范式，�
 另外，最后一句 *The similarity between users is expressed in terms of coarse features such as IDs of video watches, search query tokens and demographics.* , 表面是说用户相关性的表达通过这些粗糙的特征（观看的视频id序列，搜索query token，人口信息），
 实际就是说这个网络中用户的实际特征是这些？
 
-排序网络，用的特征更细细粒度，fine-level. 用了更多用户、视频的特征。做法是给每个视频打一个分，取top :math:`\leftarrow` 也就是点估计。
-
+排序网络，用的特征更细细粒度，fine-level. 用了更多用户、视频的特征。做法是给每个视频打一个分，取top :math:`\rightarrow` 也就是点估计。
 
 3.1 推荐作为分类
 ===============================================
@@ -34,3 +53,19 @@ Google内部开始将基本上所有的learning-problem的通用解决范式，�
 其实也类似：毕竟 `softmax` 输出一个概率，也可以作为分数。
 
 用户U，在上下文C下，是否要看视频 :math:`w_i`，用softmax
+
+
+4.1 特征表示
+=================================
+
+Embedding Categorical Features 类别向量特征
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Video-ID 这种词典特别大的，按点击频次排序取 TOP-N；
+
+OOV 直接用 0向量 （没有用 UNK ）；
+
+候选生成网络， 多个值得情况（如历史观看 videos ），直接取平均然后输入到网络；
+
+不同特征域用到同一类特征，底层共享 emb： 比如 video-id 在 “曝光”，“最后一个观看 video”，“video ID that seeded the recommendation”，这里面用到的 video-id 对应的 emb，
+底层都是1个 emb ： 好处是泛化，减少网络对内存的消耗
